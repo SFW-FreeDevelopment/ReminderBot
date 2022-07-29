@@ -33,8 +33,6 @@ namespace ReminderBot.App.Services
                 {
                     if (DateTime.Now >= reminder.RemindAt)
                     {
-                        // TODO: Remind in channel
-                        Console.WriteLine("Showtime");
                         var message = $"{reminder.Context.User.Mention} {reminder.Message}";
                         await reminder.Context.Channel.SendMessageAsync(message, false, null, null, null, null).ConfigureAwait(false);
                         reminder.HasTriggered = true;
