@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using AsyncAwaitBestPractices;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using ReminderBot.App.Repositories;
+using ReminderBot.App.Services;
 
 namespace ReminderBot.App
 {
@@ -22,14 +25,19 @@ namespace ReminderBot.App
 
         public static async Task RunBotAsync()
         {
+            var reminderRepository = new ReminderRepository();
+            
             _client = new DiscordSocketClient();
             _commands = new CommandService();
             _services = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
+                .AddSingleton(_ => reminderRepository)
                 .BuildServiceProvider();
 
-            const string token = "REPLACE_ME";
+            new ReminderService(reminderRepository).CheckReminders().SafeFireAndForget();
+            
+            const string token = "MTAwMjM3NDk2MDEyOTUwNzM1OA.G-wX0z.9NtiulwvH5q5ljLlrqBYYpqaRsHx67ohwKNn60";
 
             _client.Log += Log;
 
@@ -67,7 +75,13 @@ namespace ReminderBot.App
                 return;
             }
             argPos = 0;
-            if (message.HasStringPrefix("<@897551401369100358> ", ref argPos))
+            if (message.HasStringPrefix("remindme ", ref argPos))
+            {
+                await Execute();
+                return;
+            }
+            argPos = 0;
+            if (message.HasStringPrefix("<@1002374960129507358> ", ref argPos))
             {
                 await Execute();
                 return;
