@@ -21,7 +21,6 @@ namespace ReminderBot.App.Services
 
         public async Task CheckReminders()
         {
-            Console.WriteLine("Starting up reminder service");
             while (true)
             {
                 await Task.Delay(TIME_BETWEEN_CHECKS);
@@ -34,7 +33,7 @@ namespace ReminderBot.App.Services
                     if (DateTime.Now >= reminder.RemindAt)
                     {
                         var message = $"{reminder.Context.User.Mention} {reminder.Message}";
-                        await reminder.Context.Channel.SendMessageAsync(message, false, null, null, null, null).ConfigureAwait(false);
+                        await reminder.Context.Channel.SendMessageAsync(message).ConfigureAwait(false);
                         reminder.HasTriggered = true;
                         continue;
                     }
