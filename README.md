@@ -1,7 +1,7 @@
 # ReminderBot
 A Discord bot to create reminders.
 
-Build with .NET 6, Docker, and Discord.Net.
+Built with .NET 6, Docker, and Discord.Net.
 
 ---
 
