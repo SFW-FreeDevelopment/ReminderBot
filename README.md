@@ -7,7 +7,7 @@ Build with .NET 6, Docker, and Discord.Net.
 
 Want to invite ColorBot to your own Discord?
 
-[https://discord.com/oauth2/authorize?client_id=1002374960129507358&scope=bot&permissions=8](https://discord.com/oauth2/authorize?client_id=897551401369100358&scope=bot&permissions=8)
+[https://discord.com/oauth2/authorize?client_id=1002374960129507358&scope=bot&permissions=8](https://discord.com/oauth2/authorize?client_id=1002374960129507358&scope=bot&permissions=8)
 
 ---
 
