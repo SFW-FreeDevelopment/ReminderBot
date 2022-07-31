@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using ReminderBot.App.Models;
 
 namespace ReminderBot.App.Repositories
@@ -8,23 +11,38 @@ namespace ReminderBot.App.Repositories
     public class ReminderRepository
     {
         private static readonly Dictionary<string, Reminder> _reminders = new Dictionary<string, Reminder>();
-
-        public async Task<ICollection<Reminder>> Get()
+        
+        private readonly IMongoClient _mongoClient;
+        
+        public ReminderRepository(IMongoClient mongoClient)
         {
-            return await Task.FromResult(_reminders.Values.Where(x => !x.HasTriggered).ToList());
+            _mongoClient = mongoClient;
         }
         
-        public async Task<Reminder> Get(string id)
+        public async Task<ICollection<Reminder>> Get()
         {
-            return _reminders.TryGetValue(id, out var reminder)
-                ? await Task.FromResult(reminder)
-                : await Task.FromResult((Reminder)null);
+            return await GetCollection()
+                .AsQueryable()
+                .Where(x => !x.HasTriggered)
+                .ToListAsync();
         }
 
-        public async Task Add(Reminder reminder)
+        public async Task<Reminder> Add(Reminder data)
         {
-            _reminders.Add(reminder.Id.ToString(), reminder);
-            await Task.CompletedTask;
+            data.Id = Guid.NewGuid().ToString();
+            data.Version = 1;
+            data.CreatedAt = DateTime.UtcNow;
+            data.UpdatedAt = data.CreatedAt;
+            await GetCollection().InsertOneAsync(data);
+            return await GetCollection().AsQueryable()
+                .FirstOrDefaultAsync(x => x.Id.Equals(data.Id));
+        }
+        
+        private IMongoCollection<Reminder> GetCollection()
+        {
+            var database = _mongoClient.GetDatabase("ReminderBot");
+            var collection = database.GetCollection<Reminder>("Reminders");
+            return collection;
         }
     }
 }
