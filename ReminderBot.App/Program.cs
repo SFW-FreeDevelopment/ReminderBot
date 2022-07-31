@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 using AsyncAwaitBestPractices;
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 using ReminderBot.App.Repositories;
 using ReminderBot.App.Services;
 
@@ -25,19 +28,28 @@ namespace ReminderBot.App
 
         public static async Task RunBotAsync()
         {
-            var reminderRepository = new ReminderRepository();
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", true, true)
+                .AddEnvironmentVariables()
+                .Build();
+            
+            var mongoClient = new MongoClient(MongoClientSettings.FromConnectionString(configuration["MongoDatabaseConnectionString"]));
+            var reminderRepository = new ReminderRepository(mongoClient);
             
             _client = new DiscordSocketClient();
             _commands = new CommandService();
             _services = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
+                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
+                .AddSingleton<IConfiguration>(_ => configuration)
+                .AddSingleton(_ => mongoClient)
                 .AddSingleton(_ => reminderRepository)
                 .BuildServiceProvider();
 
             new ReminderService(reminderRepository).CheckReminders().SafeFireAndForget();
             
-            const string token = "MTAwMjM3NDk2MDEyOTUwNzM1OA.G-wX0z.9NtiulwvH5q5ljLlrqBYYpqaRsHx67ohwKNn60";
+            const string token = "MTAwMjM3NDk2MDEyOTUwNzM1OA.G9pir6.oj5qMDJWBlbQcWlcovDNjY-3Zt0RkLZR3nnZps";
 
             _client.Log += Log;
 
